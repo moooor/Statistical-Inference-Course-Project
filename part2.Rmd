@@ -1,0 +1,84 @@
+---
+title: "Part 2 - Statistical Inference Project"
+author: "Tamer Salem"
+date: "5/4/2020"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Tooth Growth
+
+## Overview
+
+Explore the R datasets "ToothGrowth" data.
+
+"ToothGrowth" captures the length of teeth in ten guinea pigs w/three dose levels of Vitamin C (0.5, 1 and 2 mg), delivered via orange juice or ascorbic acid.
+
+
+```{r toothGrow}
+library(dplyr)
+library(knitr)
+library(datasets)
+library(ggplot2)
+data("ToothGrowth")
+```
+
+Data Dictionary
+
+* [,1] len numeric Tooth length
+* [,2] supp factor Supplement type (VC or OJ).
+* [,3] dose numeric Dose in milligrams.
+
+```{r toothGrow2}
+str(ToothGrowth)
+head(ToothGrowth)
+summary(ToothGrowth)
+```
+
+## Initial Analysis
+
+Initial analysis indicates that longer tooth length correlates to higher vitamin C dosage.
+
+```{r toothGrow3}
+summaryDataFrame <- ToothGrowth %>% group_by(supp, dose) %>% summarise(count = n(), mean=mean(len), median=median(len), "standard deviation" = sd(len))
+kable (summaryDataFrame ,digits = 3, align = 'c')
+```
+
+```{r toothGrow4}
+ggplot(data=ToothGrowth, aes(x=supp, y=len))+
+        geom_boxplot(aes(fill=supp))+
+        xlab("supplement type") +
+        ylab("tooth length")+ 
+        ggtitle("tooth length by supplement type ")
+```
+
+## Confidence Interval Testing
+
+Employ t test to verify null hypotheses (both supply menthods produce same results).
+
+```{r toothGrow5}
+t.test(ToothGrowth$len[ToothGrowth$supp=="OJ"], ToothGrowth$len[ToothGrowth$supp=="VC"], paired=FALSE, var.equal=FALSE)
+```
+
+Return p-value of 0.06063 which is not large enough to reject null hypothesis.  Conclusion is that tooth length not caused by supply method.
+
+Test increasing dose from 0.5 to 1.
+
+```{r toothGrow6}
+t.test(ToothGrowth$len[ToothGrowth$dose==0.5], ToothGrowth$len[ToothGrowth$dose==1], paired=FALSE, var.equal=TRUE)
+```
+
+Dramatically lower p value (1.266e-07) implies dosage impacts mean.
+
+```{r toothGrow7}
+t.test(ToothGrowth$len[ToothGrowth$dose==1], ToothGrowth$len[ToothGrowth$dose==2], paired=FALSE, var.equal=TRUE)
+```
+
+Which also yields a very low p value (1.811e-05) which implies that increased vitamin C dosage encourages tooth growth.
+
+## Conclusion
+
+Analysis using t-tests indicate that delivery methods do not impact tooth growth.  Increased levels of vitamin C dosage encourages increased tooth growth.
